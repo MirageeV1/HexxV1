@@ -26,44 +26,55 @@ local function setTriggerBotState(state)
         _G.TriggerLoop = nil
     end
 
-    if _G.TriggerBot then
-        _G.TriggerLoop = RunService.RenderStepped:Connect(function()
-            local character = LocalPlayer.Character
-            if not character then return end
+    if not state then return end
 
-            local mouse = LocalPlayer:GetMouse()
-            local target = mouse.Target
+    _G.TriggerLoop = RunService.RenderStepped:Connect(function()
+        local character = LocalPlayer.Character
+        if not character then return end
 
-            -- Check that the target is a player and not yourself
-            if target and target.Parent then
-                local targetHumanoid = target.Parent:FindFirstChild("Humanoid")
-                local targetHRP = target.Parent:FindFirstChild("HumanoidRootPart")
-                if targetHumanoid and targetHRP and target.Parent ~= character then
-                    -- Check that the cursor is actually on the player's box
-                    local pos2D, onScreen = Camera:WorldToViewportPoint(targetHRP.Position)
-                    local mousePos = UserInputService:GetMouseLocation()
-                    local boxSize = 50
-                    if onScreen and (mousePos.X >= pos2D.X - boxSize/2 and mousePos.X <= pos2D.X + boxSize/2) and
-                                   (mousePos.Y >= pos2D.Y - boxSize/2 and mousePos.Y <= pos2D.Y + boxSize/2) then
-                        pcall(function()
-                            if mouse1click then
-                                mouse1click()
-                            elseif mouse1press and mouse1release then
-                                mouse1press()
-                                task.wait(0.02)
-                                mouse1release()
-                            else
-                                VirtualUser:Button1Down(Vector2.new())
-                                task.wait(0.02)
-                                VirtualUser:Button1Up(Vector2.new())
-                            end
-                        end)
-                    end
+        local mouse = LocalPlayer:GetMouse()
+        local target = mouse.Target
+        if not target then return end
+
+        local model = target.Parent
+        if not model or not model:IsA("Model") or model == character then return end
+
+        local humanoid = model:FindFirstChild("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then return end
+
+        local hrp = model:FindFirstChild("HumanoidRootPart")
+        local head = model:FindFirstChild("Head")
+
+        local mousePos = UserInputService:GetMouseLocation()
+        local boxSize = 50
+
+        local function checkPart(part)
+            if not part then return false end
+            local pos2D, onScreen = Camera:WorldToViewportPoint(part.Position)
+            if not onScreen then return false end
+
+            return mousePos.X >= pos2D.X - boxSize/2 and mousePos.X <= pos2D.X + boxSize/2 and
+                   mousePos.Y >= pos2D.Y - boxSize/2 and mousePos.Y <= pos2D.Y + boxSize/2
+        end
+
+        if checkPart(hrp) or checkPart(head) then
+            pcall(function()
+                if mouse1click then
+                    mouse1click()
+                elseif mouse1press and mouse1release then
+                    mouse1press()''
+                    task.wait(0.02)
+                    mouse1release()
+                else
+                    VirtualUser:Button1Down(Vector2.new())
+                    task.wait(0.02)
+                    VirtualUser:Button1Up(Vector2.new())
                 end
-            end
-        end)
-    end
+            end)
+        end
+    end)
 end
+
 
 -- Toggle for the UI
 Tabs:Toggle("TriggerBot", function(Value)
