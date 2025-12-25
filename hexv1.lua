@@ -204,13 +204,13 @@ end
 Tabs:Toggle("ESP", function(Value)
     setESPState(Value)
 end)
-Tabs:Bind("ESP Key", Enum.KeyCode.V, function() end)
+Tabs:Bind("ESP Key", Enum.KeyCode.B, function() end)
 
 
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
 
-    if input.KeyCode == Enum.KeyCode.V then
+    if input.KeyCode == Enum.KeyCode.B then
         setESPState(not ESPEnabled)
     elseif input.KeyCode == Enum.KeyCode.LeftAlt then
         w:Toggle()
